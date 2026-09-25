@@ -1045,6 +1045,9 @@ static void setMpvOptionString(mpv_handle *mpv, const char *name, const char *va
     NSString *_lastConfiguredHdrKey;
     NSString *_lastResizeRefreshKey;
     dispatch_queue_t _mpvEventQueue;
+    // Keeps latency-sensitive control writes ordered without blocking the UI/JNI caller.
+    // Do not reuse _mpvEventQueue: it also carries slower sync/control reads.
+    dispatch_queue_t _mpvControlQueue;
     // Drains mpv's event queue (property observations, async replies, log lines).
     dispatch_queue_t _mpvDrainQueue;
     std::atomic_bool _mpvDrainStopped;
@@ -1106,6 +1109,7 @@ static void setMpvOptionString(mpv_handle *mpv, const char *name, const char *va
     _cachedLoading.store(true);
     _cachedEnded.store(false);
     _mpvEventQueue = dispatch_queue_create("com.nuvio.desktop.mpv-events", DISPATCH_QUEUE_SERIAL);
+    _mpvControlQueue = dispatch_queue_create("com.nuvio.desktop.mpv-control", DISPATCH_QUEUE_SERIAL);
     _mpvDrainQueue = dispatch_queue_create("com.nuvio.desktop.mpv-drain", DISPATCH_QUEUE_SERIAL);
     _mpvDrainStopped.store(false);
     _aoIsAvfoundation.store(false);
@@ -1823,6 +1827,9 @@ static void setMpvOptionString(mpv_handle *mpv, const char *name, const char *va
     }
     _controlsWebReady = NO;
     _pendingControlsJson = nil;
+    if (_mpvControlQueue) {
+        dispatch_sync(_mpvControlQueue, ^{});
+    }
     if (_mpvEventQueue) {
         dispatch_sync(_mpvEventQueue, ^{});
     }
@@ -1889,10 +1896,20 @@ static void setMpvOptionString(mpv_handle *mpv, const char *name, const char *va
 }
 
 - (void)setSpeed:(double)speed {
-    if (!_mpv) return;
     double clamped = fmax(0.25, fmin(4.0, speed));
-    mpv_set_property(_mpv, "speed", MPV_FORMAT_DOUBLE, &clamped);
-    _cachedSpeed.store(clamped);
+    mpv_handle *mpv = _mpv;
+    dispatch_queue_t queue = _mpvControlQueue;
+    if (!mpv || !queue) return;
+
+    dispatch_async(queue, ^{
+        if (self->_mpv != mpv) {
+            return;
+        }
+        double requested = clamped;
+        if (mpv_set_property(mpv, "speed", MPV_FORMAT_DOUBLE, &requested) >= 0) {
+            self->_cachedSpeed.store(requested);
+        }
+    });
 }
 
 - (double)speed {

@@ -3128,6 +3128,7 @@ let rootPointerStartY = 0;
 let spaceHoldTimer = null;
 let isSpaceBoosting = false;
 let pausedBeforeSpeedBoosting = false;
+const speedBoostTargetRate = 2.0;
 
 const clearSpeedBoostHoldTimer = () => {
   if (speedBoostHoldTimer) {
@@ -3168,18 +3169,18 @@ const clearSpaceHoldTimerAndStopSpeedBoost = () => {
 
 const startSpeedBoost = () => {
   if (isSpeedBoosting) return;
+  const currentSpeedStr = String(state.playbackSpeedLabel || "1x");
+  const currentSpeedNum = parseFloat(currentSpeedStr.replace("x", "")) || 1.0;
+  if (Math.abs(currentSpeedNum - speedBoostTargetRate) < 0.01) return;
+
   isSpeedBoosting = true;
-  if (preSpeedBoostRate == null) {
-    const currentSpeedStr = String(state.playbackSpeedLabel || "1x");
-    const currentSpeedNum = parseFloat(currentSpeedStr.replace("x", "")) || 1.0;
-    preSpeedBoostRate = currentSpeedNum === 2.0 ? 1.0 : currentSpeedNum;
-  }
+  preSpeedBoostRate = currentSpeedNum;
   if (!state.isPlaying) {
     pausedBeforeSpeedBoosting = true;
     requestPlaybackState("setPlaybackStateQuiet", false);
   }
-  showPlayerToast("2x", { icon: "icon-speed", persistent: true });
-  send("setPlaybackSpeed", 2.0);
+  showPlayerToast(`${speedBoostTargetRate}x`, { icon: "icon-speed", persistent: true });
+  send("setPlaybackSpeed", speedBoostTargetRate);
 };
 
 const stopSpeedBoost = () => {

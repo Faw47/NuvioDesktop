@@ -42,6 +42,9 @@ jobs:
       - name: Check desktop player JavaScript syntax
         run: node --check composeApp/src/desktopMain/resources/player-ui/controls.js
 
+      - name: Prepare local build properties
+        run: touch local.properties
+
       - name: Run desktop tests and build unsigned arm64 DMG
         env:
           NUVIO_MACOS_NOTARY_KEYCHAIN_PROFILE: ""

@@ -1,0 +1,65 @@
+name: Mac Fork CI
+
+on:
+  push:
+    branches:
+      - "mac/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-fork-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-arm64:
+    name: macOS arm64 build
+    runs-on: macos-15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Fetch arm64 macOS runtime
+        run: git lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/arm64/**" --exclude=""
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Check desktop player JavaScript syntax
+        run: node --check composeApp/src/desktopMain/resources/player-ui/controls.js
+
+      - name: Run desktop tests and build unsigned arm64 DMG
+        env:
+          NUVIO_MACOS_NOTARY_KEYCHAIN_PROFILE: ""
+          NUVIO_MACOS_SIGNING_IDENTITY: ""
+        run: |
+          ./gradlew \
+            :composeApp:desktopTest \
+            :composeApp:packageReleaseDmg \
+            "-Pnuvio.macos.arch=arm64" \
+            -Pcompose.desktop.packaging.checkJdkVendor=false \
+            --no-configuration-cache \
+            --no-daemon \
+            --stacktrace
+
+      - name: Upload arm64 DMG
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-mac-fork-arm64-${{ github.sha }}
+          path: composeApp/build/compose/release-dmgs/*.dmg
+          if-no-files-found: error
+          retention-days: 7

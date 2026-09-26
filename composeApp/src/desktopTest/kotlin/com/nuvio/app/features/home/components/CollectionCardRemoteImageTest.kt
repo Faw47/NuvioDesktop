@@ -29,12 +29,16 @@ class CollectionCardRemoteImageTest {
     fun animatedWebpPlaysOnHoverAndRestoresCoverOnExit() = assertHoverPlayback("focus.webp", WEBP)
 
     @Test
-    fun animatedGifStillPlaysOnHover() = assertHoverPlayback("focus.gif", GIF)
+    fun animatedGifStillPlaysOnHover() = assertHoverPlayback("focus.gif", GIF, expectPrefetch = true)
 
     @Test
     fun animatedImageDoesNotRequireAFileExtension() = assertHoverPlayback("focus", WEBP)
 
-    private fun assertHoverPlayback(path: String, encodedImage: String) {
+    private fun assertHoverPlayback(
+        path: String,
+        encodedImage: String,
+        expectPrefetch: Boolean = false,
+    ) {
         val requests = AtomicInteger()
         val cover = ByteArrayOutputStream().apply {
             ImageIO.write(BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB).apply {
@@ -75,7 +79,12 @@ class CollectionCardRemoteImageTest {
                 }
             }
             waitForColor(2)
-            assertEquals(0, requests.get(), "The focus asset should not load before hover")
+            if (expectPrefetch) {
+                compose.waitUntil(timeoutMillis = 5_000) { requests.get() == 1 }
+                assertEquals(1, requests.get(), "The GIF focus asset should prefetch once when visible")
+            } else {
+                assertEquals(0, requests.get(), "The focus asset should not load before hover")
+            }
             card.performMouseInput { enter(center) }
             waitForColor(0)
             waitForColor(1)

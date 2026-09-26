@@ -804,7 +804,7 @@ private fun PlayerScreenRuntime.handlePlayerControlsAction(action: PlayerControl
             return false
         }
         PlayerControlsAction.KeyboardSeekBack -> {
-            prepareSeekByForNativeFallback(-10_000L, revealControls = false)
+            prepareSeekByForNativeFallback(-playerSettingsUiState.seekStepSeconds.toLong() * 1_000L, revealControls = false)
             return false
         }
         PlayerControlsAction.SeekForward -> {
@@ -812,7 +812,7 @@ private fun PlayerScreenRuntime.handlePlayerControlsAction(action: PlayerControl
             return false
         }
         PlayerControlsAction.KeyboardSeekForward -> {
-            prepareSeekByForNativeFallback(10_000L, revealControls = false)
+            prepareSeekByForNativeFallback(playerSettingsUiState.seekStepSeconds.toLong() * 1_000L, revealControls = false)
             return false
         }
         PlayerControlsAction.KeyboardVolumeDown,

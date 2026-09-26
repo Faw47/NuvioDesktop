@@ -181,6 +181,7 @@ let state = {
   pauseOverlayDescription: "",
   resizeModeLabel: "Fit",
   playbackSpeedLabel: "1x",
+  seekStepSeconds: 10,
   isFullscreen: false,
   volumeLevel: null,
   subtitlesLabel: "Subs",
@@ -571,8 +572,9 @@ const syncVolumeControl = () => {
 };
 
 const seekToastLabel = command => {
-  if (command === "seekBack" || command === "keyboardSeekBack") return "-10s";
-  if (command === "seekForward" || command === "keyboardSeekForward") return "+10s";
+  const step = Math.max(1, Math.round(Number(state.seekStepSeconds) || 10));
+  if (command === "seekBack" || command === "keyboardSeekBack") return `-${step}s`;
+  if (command === "seekForward" || command === "keyboardSeekForward") return `+${step}s`;
   if (command === "pictureInPicture" || command === "pip") return state.pipLabel || "";
   return "";
 };

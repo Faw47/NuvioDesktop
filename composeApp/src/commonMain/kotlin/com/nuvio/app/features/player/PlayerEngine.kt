@@ -86,6 +86,7 @@ data class PlayerControlsState(
     val pauseOverlayDescription: String = "",
     val resizeModeLabel: String = "Fit",
     val playbackSpeedLabel: String = "1x",
+    val seekStepSeconds: Int = DEFAULT_SEEK_STEP_SECONDS,
     val volumeLevel: Float? = null,
     val subtitlesLabel: String = "Subs",
     val audioLabel: String = "Audio",

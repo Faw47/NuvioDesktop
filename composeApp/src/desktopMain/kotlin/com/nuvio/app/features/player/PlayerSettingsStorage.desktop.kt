@@ -27,6 +27,7 @@ internal actual object PlayerSettingsStorage {
     private const val pauseOverlayEnabledKey = "pause_overlay_enabled"
     private const val showParentalGuideKey = "show_parental_guide"
     private const val resizeModeKey = "resize_mode"
+    private const val seekStepSecondsKey = "seek_step_seconds"
     private const val holdToSpeedEnabledKey = "hold_to_speed_enabled"
     private const val holdToSpeedValueKey = "hold_to_speed_value"
     private const val touchGesturesEnabledKey = "touch_gestures_enabled"
@@ -194,6 +195,8 @@ internal actual object PlayerSettingsStorage {
     actual fun saveShowParentalGuide(enabled: Boolean) = saveBoolean(showParentalGuideKey, enabled)
     actual fun loadResizeMode(): String? = loadString(resizeModeKey)
     actual fun saveResizeMode(mode: String) = saveString(resizeModeKey, mode)
+    actual fun loadSeekStepSeconds(): Int? = loadInt(seekStepSecondsKey)
+    actual fun saveSeekStepSeconds(seconds: Int) = saveInt(seekStepSecondsKey, seconds)
     actual fun loadHoldToSpeedEnabled(): Boolean? = loadBoolean(holdToSpeedEnabledKey)
     actual fun saveHoldToSpeedEnabled(enabled: Boolean) = saveBoolean(holdToSpeedEnabledKey, enabled)
     actual fun loadHoldToSpeedValue(): Float? = loadFloat(holdToSpeedValueKey)

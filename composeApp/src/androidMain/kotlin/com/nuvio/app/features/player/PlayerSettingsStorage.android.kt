@@ -27,6 +27,7 @@ actual object PlayerSettingsStorage {
     private const val pauseOverlayEnabledKey = "pause_overlay_enabled"
     private const val showParentalGuideKey = "show_parental_guide"
     private const val resizeModeKey = "resize_mode"
+    private const val seekStepSecondsKey = "seek_step_seconds"
     private const val holdToSpeedEnabledKey = "hold_to_speed_enabled"
     private const val holdToSpeedValueKey = "hold_to_speed_value"
     private const val touchGesturesEnabledKey = "touch_gestures_enabled"
@@ -281,6 +282,19 @@ actual object PlayerSettingsStorage {
         preferences
             ?.edit()
             ?.putString(ProfileScopedKey.of(resizeModeKey), mode)
+            ?.apply()
+    }
+
+    actual fun loadSeekStepSeconds(): Int? =
+        preferences?.let { sharedPreferences ->
+            val key = ProfileScopedKey.of(seekStepSecondsKey)
+            if (sharedPreferences.contains(key)) sharedPreferences.getInt(key, 10) else null
+        }
+
+    actual fun saveSeekStepSeconds(seconds: Int) {
+        preferences
+            ?.edit()
+            ?.putInt(ProfileScopedKey.of(seekStepSecondsKey), seconds)
             ?.apply()
     }
 

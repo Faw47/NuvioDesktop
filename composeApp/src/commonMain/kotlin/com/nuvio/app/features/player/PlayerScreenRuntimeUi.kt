@@ -260,6 +260,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         pauseOverlayDescription = (activePauseDescription ?: activeStreamSubtitle).orEmpty(),
         resizeModeLabel = stringResource(resizeMode.labelRes),
         playbackSpeedLabel = formatPlaybackSpeedLabel(playbackSnapshot.playbackSpeed),
+        seekStepSeconds = playerSettingsUiState.seekStepSeconds,
         subtitlesLabel = stringResource(Res.string.compose_player_subs),
         audioLabel = stringResource(Res.string.compose_player_audio),
         sourcesLabel = stringResource(Res.string.compose_player_sources),
@@ -638,8 +639,9 @@ private fun PlayerScreenRuntime.RenderPlayerControls(displayedPositionMs: Long, 
             },
             onBack = { requestBack() },
             onTogglePlayback = { togglePlayback() },
-            onSeekBack = { seekBy(-10_000L) },
-            onSeekForward = { seekBy(10_000L) },
+            onSeekBack = { seekBy(-playerSettingsUiState.seekStepSeconds.toLong() * 1_000L) },
+            onSeekForward = { seekBy(playerSettingsUiState.seekStepSeconds.toLong() * 1_000L) },
+            seekStepSeconds = playerSettingsUiState.seekStepSeconds,
             onResizeModeClick = { cycleResizeMode() },
             onSpeedClick = { cyclePlaybackSpeed() },
             onSubtitleClick = {
@@ -798,7 +800,7 @@ private fun PlayerScreenRuntime.handlePlayerControlsAction(action: PlayerControl
             return false
         }
         PlayerControlsAction.SeekBack -> {
-            prepareSeekByForNativeFallback(-10_000L)
+            prepareSeekByForNativeFallback(-playerSettingsUiState.seekStepSeconds.toLong() * 1_000L)
             return false
         }
         PlayerControlsAction.KeyboardSeekBack -> {
@@ -806,7 +808,7 @@ private fun PlayerScreenRuntime.handlePlayerControlsAction(action: PlayerControl
             return false
         }
         PlayerControlsAction.SeekForward -> {
-            prepareSeekByForNativeFallback(10_000L)
+            prepareSeekByForNativeFallback(playerSettingsUiState.seekStepSeconds.toLong() * 1_000L)
             return false
         }
         PlayerControlsAction.KeyboardSeekForward -> {

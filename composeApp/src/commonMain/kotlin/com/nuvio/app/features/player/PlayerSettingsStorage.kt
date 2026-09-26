@@ -19,6 +19,8 @@ internal expect object PlayerSettingsStorage {
     fun saveShowParentalGuide(enabled: Boolean)
     fun loadResizeMode(): String?
     fun saveResizeMode(mode: String)
+    fun loadSeekStepSeconds(): Int?
+    fun saveSeekStepSeconds(seconds: Int)
     fun loadHoldToSpeedEnabled(): Boolean?
     fun saveHoldToSpeedEnabled(enabled: Boolean)
     fun loadHoldToSpeedValue(): Float?

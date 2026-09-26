@@ -32,6 +32,12 @@ fun snapToAllowedTimeout(value: Int): Int {
     return bestValue
 }
 
+const val DEFAULT_SEEK_STEP_SECONDS = 10
+val SEEK_STEP_SECONDS_PRESETS = listOf(5, 10, 15, 30)
+
+private fun normalizeSeekStepSeconds(value: Int?): Int =
+    value?.takeIf { it in SEEK_STEP_SECONDS_PRESETS } ?: DEFAULT_SEEK_STEP_SECONDS
+
 data class PlayerSettingsUiState(
     val useLegacyPlayerLayout: Boolean = false,
     val showLoadingOverlay: Boolean = true,
@@ -39,6 +45,7 @@ data class PlayerSettingsUiState(
     val pauseOverlayEnabled: Boolean = true,
     val showParentalGuide: Boolean = true,
     val resizeMode: PlayerResizeMode = PlayerResizeMode.Fit,
+    val seekStepSeconds: Int = DEFAULT_SEEK_STEP_SECONDS,
     val holdToSpeedEnabled: Boolean = true,
     val holdToSpeedValue: Float = 2f,
     val touchGesturesEnabled: Boolean = true,
@@ -110,6 +117,7 @@ object PlayerSettingsRepository {
     private var pauseOverlayEnabled = true
     private var showParentalGuide = true
     private var resizeMode = PlayerResizeMode.Fit
+    private var seekStepSeconds = DEFAULT_SEEK_STEP_SECONDS
     private var holdToSpeedEnabled = true
     private var holdToSpeedValue = 2f
     private var touchGesturesEnabled = true
@@ -186,6 +194,7 @@ object PlayerSettingsRepository {
         pauseOverlayEnabled = true
         showParentalGuide = true
         resizeMode = PlayerResizeMode.Fit
+        seekStepSeconds = DEFAULT_SEEK_STEP_SECONDS
         holdToSpeedEnabled = true
         holdToSpeedValue = 2f
         touchGesturesEnabled = true
@@ -257,6 +266,7 @@ object PlayerSettingsRepository {
         resizeMode = PlayerSettingsStorage.loadResizeMode()
             ?.let { runCatching { PlayerResizeMode.valueOf(it) }.getOrNull() }
             ?: PlayerResizeMode.Fit
+        seekStepSeconds = normalizeSeekStepSeconds(PlayerSettingsStorage.loadSeekStepSeconds())
         holdToSpeedEnabled = PlayerSettingsStorage.loadHoldToSpeedEnabled() ?: true
         holdToSpeedValue = PlayerSettingsStorage.loadHoldToSpeedValue() ?: 2f
         touchGesturesEnabled = PlayerSettingsStorage.loadTouchGesturesEnabled() ?: true
@@ -444,6 +454,15 @@ object PlayerSettingsRepository {
         resizeMode = mode
         publish()
         PlayerSettingsStorage.saveResizeMode(mode.name)
+    }
+
+    fun setSeekStepSeconds(seconds: Int) {
+        ensureLoaded()
+        val normalized = normalizeSeekStepSeconds(seconds)
+        if (seekStepSeconds == normalized) return
+        seekStepSeconds = normalized
+        publish()
+        PlayerSettingsStorage.saveSeekStepSeconds(normalized)
     }
 
     fun setHoldToSpeedEnabled(enabled: Boolean) {
@@ -997,6 +1016,7 @@ object PlayerSettingsRepository {
             pauseOverlayEnabled = pauseOverlayEnabled,
             showParentalGuide = showParentalGuide,
             resizeMode = resizeMode,
+            seekStepSeconds = seekStepSeconds,
             holdToSpeedEnabled = holdToSpeedEnabled,
             holdToSpeedValue = holdToSpeedValue,
             touchGesturesEnabled = touchGesturesEnabled,

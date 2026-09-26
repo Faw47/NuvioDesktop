@@ -25,6 +25,7 @@ actual object PlayerSettingsStorage {
     private const val pauseOverlayEnabledKey = "pause_overlay_enabled"
     private const val showParentalGuideKey = "show_parental_guide"
     private const val resizeModeKey = "resize_mode"
+    private const val seekStepSecondsKey = "seek_step_seconds"
     private const val holdToSpeedEnabledKey = "hold_to_speed_enabled"
     private const val holdToSpeedValueKey = "hold_to_speed_value"
     private const val touchGesturesEnabledKey = "touch_gestures_enabled"
@@ -282,6 +283,10 @@ actual object PlayerSettingsStorage {
     actual fun saveResizeMode(mode: String) {
         NSUserDefaults.standardUserDefaults.setObject(mode, forKey = ProfileScopedKey.of(resizeModeKey))
     }
+
+    actual fun loadSeekStepSeconds(): Int? = loadInt(seekStepSecondsKey)
+
+    actual fun saveSeekStepSeconds(seconds: Int) = saveInt(seekStepSecondsKey, seconds)
 
     actual fun loadHoldToSpeedEnabled(): Boolean? {
         val defaults = NSUserDefaults.standardUserDefaults
